@@ -160,8 +160,10 @@ public class ConfigureProjectsWizard extends Wizard {
 
       List<SonarProject> list = Lists.newArrayList();
       List<SonarProject> selectedList = Lists.newArrayList();
+      MavenHelper mavenHelper = new MavenHelper();
       for (IProject project : projects) {
         SonarProject sonarProject = new SonarProject(project);
+        mavenHelper.setGAFromPomFileIfExist(project, sonarProject);
         list.add(sonarProject);
         if (selected.contains(project)) {
           selectedList.add(sonarProject);
@@ -327,6 +329,9 @@ public class ConfigureProjectsWizard extends Wizard {
         Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
         List<Resource> resources = sonar.findAll(query);
         for (SonarProject sonarProject : projects) {
+          if(StringUtils.isNotBlank(sonarProject.getArtifactId())) {
+        	  continue;
+          }
           for (Resource resource : resources) {
             if (resource.getKey().endsWith(":" + sonarProject.getName())) {
               sonarProject.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
